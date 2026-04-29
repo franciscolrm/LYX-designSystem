@@ -92,7 +92,7 @@
   /* Sidebar — clara */
   --sidebar: oklch(0.99 0 0);
   --sidebar-foreground: oklch(0 0 0);
-  --sidebar-primary: oklch(0.42 0.071 211);
+  --sidebar-primary: oklch(0.9404 0 0);
   --sidebar-primary-foreground: oklch(1.00 0 0);
   --sidebar-accent: oklch(0.94 0 0);
   --sidebar-accent-foreground: oklch(0 0 0);
