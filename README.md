@@ -4,34 +4,72 @@ Padrão de design para todos os projetos de dashboard e BI da Lyx Incorporadora.
 
 ---
 
+## Como usar (1 linha no terminal — sem clonar o repo)
+
+O instalador baixa apenas os arquivos necessários do GitHub (via tarball), aplica no seu projeto e limpa os temporários. Funciona em **macOS, Linux e Windows**.
+
+### macOS / Linux / Git-Bash
+
+```bash
+# Aplicar em projeto Next.js existente
+curl -fsSL https://raw.githubusercontent.com/franciscolrm/LYX-designSystem/main/install.sh | bash -s -- apply ./meu-projeto
+
+# Criar projeto novo já com o design system
+curl -fsSL https://raw.githubusercontent.com/franciscolrm/LYX-designSystem/main/install.sh | bash -s -- init meu-novo-projeto
+```
+
+### Windows (PowerShell)
+
+```powershell
+# Carrega a função `lyx` na sessão
+irm https://raw.githubusercontent.com/franciscolrm/LYX-designSystem/main/install.ps1 | iex
+
+# Aplicar em projeto existente
+lyx apply .\meu-projeto
+
+# Criar projeto novo
+lyx init meu-novo-projeto
+```
+
+### Flags suportadas
+
+| Flag (bash)        | Flag (PS)        | Descrição |
+|--------------------|------------------|-----------|
+| `--ref <tag>`      | `-Ref <tag>`     | Versão/branch do design system (default: `main`) |
+| `--dry-run`        | `-DryRun`        | Simula a aplicação sem escrever arquivos |
+| `--no-backup`      | `-NoBackup`      | Desativa backup automático |
+
+### Dois cenários cobertos
+
+1. **Projeto existente** (`apply`) — aplica o design system **sem mexer no backend**.
+   - Detecta `app/api`, `prisma/`, `drizzle/`, `server/` → reporta mas **não toca**.
+   - Bloqueia se Tailwind v3 estiver instalado (DS exige v4).
+   - Cria backup em `.lyx-backup-<timestamp>/` antes de sobrescrever.
+   - Gera `lyx-migration-report.md` listando cores hardcoded a migrar.
+2. **Projeto novo** (`init`) — roda `create-next-app` com a stack padrão Lyx e aplica tudo.
+
+### Pré-requisitos
+
+- `npm` no PATH (Node 18+).
+- `tar` e `curl` (macOS/Linux já têm; Windows 10+ tem `tar` nativo, `Invoke-WebRequest` faz o resto).
+- Projeto alvo (modo `apply`) deve ter: Next.js App Router (`app/` ou `src/app/`) + Tailwind CSS v4.
+
+---
+
 ## Estrutura do repositório
 
 ```
 lyx-design-system/
-├── tokens/
-│   └── globals.css          # Tokens CSS (cores, fontes, radius)
-├── components/
-│   └── ui/
-│       ├── button.tsx
-│       ├── badge.tsx
-│       ├── card.tsx
-│       ├── table.tsx
-│       ├── skeleton.tsx
-│       ├── separator.tsx
-│       ├── popover.tsx
-│       ├── scroll-area.tsx
-│       ├── select.tsx
-│       ├── sidebar.tsx      # Menu lateral composable
-│       └── lyx-logo.tsx     # Logo SVG inline
-├── lib/
-│   └── utils.ts             # Função cn() para merge de classes
-├── assets/
-│   ├── lyx-logo.svg
-│   └── lyx-logo.png
-├── docs/
-│   └── design-system.tsx    # Página de documentação visual
-├── preview/                 # Projeto Next.js para visualizar o design system
-├── apply-design-system.sh   # Script para aplicar em novo projeto
+├── tokens/globals.css            # Tokens CSS (cores, fontes, radius)
+├── components/ui/                # Componentes copiáveis (button, card, sidebar, etc.)
+├── lib/utils.ts                  # Helper cn()
+├── assets/                       # Logos (svg/png)
+├── docs/                         # Documentação visual e do aplicador
+├── preview/                      # Projeto Next.js para visualizar o DS
+├── install.sh                    # Bootstrap remoto (macOS/Linux/Git-Bash)
+├── install.ps1                   # Bootstrap remoto (Windows PowerShell)
+├── apply-design-system.sh        # Aplicador local (bash)
+├── apply-design-system.ps1       # Aplicador local (PowerShell)
 ├── STACK.md
 └── README.md
 ```
@@ -52,30 +90,26 @@ Acesse **http://localhost:3000/design-system**
 
 ---
 
-## Aplicar em um novo projeto
+## Uso local (clonando o repo)
 
-Documentacao completa do aplicador: [`docs/apply-design-system.md`](docs/apply-design-system.md)
-
-### Opção A — Script automático (recomendado)
-
-**Pré-requisito:** ter criado o projeto com `create-next-app`.
+Se preferir clonar o repo (ex: para desenvolver o próprio DS):
 
 ```bash
-# 1. Criar o projeto
-npx create-next-app@latest meu-projeto --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
+git clone https://github.com/franciscolrm/LYX-designSystem.git lyx-design-system
+cd lyx-design-system
 
-# 2. Rodar o script a partir da pasta do design system
-bash apply-design-system.sh ../meu-projeto
+# bash
+bash apply-design-system.sh ../meu-projeto [--dry-run] [--no-backup]
 
-# 3. Iniciar
-cd meu-projeto && npm run dev
+# PowerShell
+.\apply-design-system.ps1 -Target ..\meu-projeto [-DryRun] [-NoBackup]
 ```
 
-O script faz tudo automaticamente: instala dependências, copia arquivos e ajusta o `layout.tsx`.
+Documentação detalhada do aplicador: [`docs/apply-design-system.md`](docs/apply-design-system.md)
 
 ---
 
-### Opção B — Passo a passo manual
+### Passo a passo manual (sem script)
 
 #### 1. Criar o projeto Next.js
 
